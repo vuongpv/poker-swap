@@ -228,7 +228,7 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 						if ( DoCheckCombos(iCardIndex2) )
 							bAtLeastOneCombo = true;
 						if (bAtLeastOneCombo)
-						{
+						{													
 							mSwappedCardStack.clear();
 							mGrid[iCardIndex1].resetLastDir();
 							mGrid[iCardIndex2].resetLastDir();
