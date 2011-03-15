@@ -750,16 +750,19 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 			if ((iIndexCard>=GRID_COLS) && (iIndexCard<2*GRID_COLS))
 			{				
 				Random rndCard = new Random();	
-				int l=(iIndexCard/Card.CARD_WIDTH)-1; // La nouvelle carte va sur la ligne du dessus
+				int l=(iIndexCard/GRID_COLS); 
+				int c=iIndexCard-(l*GRID_COLS);
+				l--; // La nouvelle carte va sur la ligne du dessus
 				Card card = deck.get(rndCard.nextInt(deck.size()));				
-				final CardSprite sprite = new CardSprite(card, iIndexCard-l, l, this.mCardTotextureRegionMap.get(card));
-				Log.i("=-=-=-=-=-PS","New card" + card.toString() + " at " + sprite.getGridIndex());
-				mGrid[sprite.getGridIndex()] = sprite;
+				final CardSprite sprite = new CardSprite(card, c, l, this.mCardTotextureRegionMap.get(card));
+				final int newSpriteIndex = sprite.getGridIndex();
+				mGrid[newSpriteIndex] = sprite;
 				this.runOnUpdateThread(new Runnable() {
 					@Override
 					public void run() {							
 						try {
-							PokerSwap.this.getEngine().getScene().getLayer(LAYER_CARD).addEntity(sprite);							
+							Log.i("=-=-=-=-=-PS","New card" + mGrid[newSpriteIndex].toString() + " at " + newSpriteIndex);
+							PokerSwap.this.getEngine().getScene().getLayer(LAYER_CARD).addEntity(mGrid[newSpriteIndex]);							
 						} catch (Exception e) {					
 							e.printStackTrace();
 						}
