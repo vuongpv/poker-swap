@@ -101,7 +101,7 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 	public static Stack<Integer> UpdCardStack = new Stack<Integer>();
 	
 	public Stack<Integer> mCardToRemoveStack = new Stack<Integer>();
-	//public static Stack<Integer> mCardToFallStack = new Stack<Integer>();
+	
 	public static Stack<CardSprite> mCardToDestroyStack = new Stack<CardSprite>();
 	public static Stack<CardSprite> mCardMovingOutStack = new Stack<CardSprite>();
 	public static Stack<Integer> mSwappedCardStack = new Stack<Integer>();
@@ -173,7 +173,7 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 		
 		for (int t=0;t<mDebugText.length;t++)
 		{			
-			this.mDebugText[t] = new ChangeableText(5, 350+(t*20), this.mFont, t+":", 20);
+			this.mDebugText[t] = new ChangeableText(5, 350+(t*20), this.mFont, "", 35);
 			this.mDebugText[t].setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 			this.mDebugText[t].setAlpha(0.5f);
 			scene.getLayer(LAYER_SCORE).addEntity(this.mDebugText[t]);
@@ -268,7 +268,7 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 			@Override
 			public void run() {			
 				try {
-					mDebugText[2].setText("Slide: " + eSlideDirection);
+					//mDebugText[2].setText("Slide: " + eSlideDirection);
 					int iIndexCardToMove = mSelectedCard.Move(eSlideDirection);	
 					if (iIndexCardToMove > -1)
 						mGrid[iIndexCardToMove].MoveExchange(eSlideDirection);
@@ -360,28 +360,42 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 	{
 		boolean bOneOrMoreCombos = false;
 		Log.i("=-=-=-=-=-PS","Check combo around " + iCardIndex);
-		// Toujours tester de la combo la plus compliquée (qui rapporte le plus ) vers la plus simple
-//		int[] tabComboH = CheckHorizontalClones(iCardIndex,2);
-//		int[] tabComboV = CheckVerticalClones(iCardIndex,2);
-//		if (((tabComboH != null ) && (tabComboH.length>1 )) ||
-//				((tabComboV != null ) && (tabComboV.length>1 )))
-//		{
-//			mCardToRemoveStack.push(iCardIndex);
-//			bOneOrMoreCombos = true;
-//		}	
+		
+
 		
 		boolean bHClone = false; //CheckHorizontalSameCardProperty(iCardIndex,2,CardProperty.CLONE);	
 		boolean bVClone = false; //CheckVerticalSameCardProperty(iCardIndex, 2, CardProperty.CLONE);
 		
-		boolean bHCarre =  CheckHorizontalSameCardProperty(iCardIndex,4,CardProperty.VALUE);	
-		boolean bHColor =  CheckHorizontalSameCardProperty(iCardIndex,5,CardProperty.COLOR);
-		boolean bHBrelan =  CheckHorizontalSameCardProperty(iCardIndex,3,CardProperty.VALUE);				
-		boolean bHPair =  CheckHorizontalSameCardProperty(iCardIndex,2,CardProperty.VALUE);
+		// Toujours tester de la combo la plus compliquée (qui rapporte le plus ) vers la plus simple
+		// Si combo dans un sens H ou V, on ne teste pas celles qui sont plus petites
 		
-		boolean bVCarre =  CheckVerticalSameCardProperty(iCardIndex,4,CardProperty.VALUE);	
-		boolean bVColor =  CheckVerticalSameCardProperty(iCardIndex,5,CardProperty.COLOR);
-		boolean bVBrelan =  CheckVerticalSameCardProperty(iCardIndex,3,CardProperty.VALUE);				
-		boolean bVPair =  CheckVerticalSameCardProperty(iCardIndex,2,CardProperty.VALUE);
+		boolean bHCarre =  false;		boolean bHColor =  false;  boolean bHBrelan =  false;	boolean bHPair =  false;
+		
+		bHCarre =  CheckHorizontalSameCardProperty(iCardIndex,4,CardProperty.VALUE);	
+		if (!bHCarre)
+		{
+			bHColor =  CheckHorizontalSameCardProperty(iCardIndex,5,CardProperty.COLOR);
+			if (!bHColor)
+			{
+				bHBrelan =  CheckHorizontalSameCardProperty(iCardIndex,3,CardProperty.VALUE);				
+				if (!bHBrelan)
+					bHPair =  CheckHorizontalSameCardProperty(iCardIndex,2,CardProperty.VALUE);
+			}
+		}
+		
+		boolean bVCarre =  false;		boolean bVColor =  false;  boolean bVBrelan =  false;	boolean bVPair =  false;
+		
+		bVCarre = CheckVerticalSameCardProperty(iCardIndex,4,CardProperty.VALUE);
+		if (!bVCarre)
+		{
+			bVColor =  CheckVerticalSameCardProperty(iCardIndex,5,CardProperty.COLOR);
+			if (!bVColor)
+			{
+				bVBrelan =  CheckVerticalSameCardProperty(iCardIndex,3,CardProperty.VALUE);			
+				if (!bVBrelan)
+					bVPair =  CheckVerticalSameCardProperty(iCardIndex,2,CardProperty.VALUE);
+			}
+		}
 //		if (bHClone && bVClone)
 //			mDebugText[3].setText("Double Clone !!!");
 //		else
@@ -417,7 +431,6 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 		{
 			float iX = Math.abs(DestX-mTouchDownPosition[0]);
 			float iY = Math.abs(DestY-mTouchDownPosition[1]);
-			//mDebugText[3].setText("DX:" + iX + " DY:" + iY); 
 			// determine si le plus grand slide est vertical ou horizontal
 			if (iX>iY)
 			{
@@ -453,20 +466,20 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 		switch (pSceneTouchEvent.getAction())
 		{
 		case TouchEvent.ACTION_DOWN:
+			String strDebugLine;
 			if (pSceneTouchEvent.getY()<Card.CARD_HEIGHT*8)
-			{				
-				mDebugText[0].setText("X:" + pSceneTouchEvent.getX() + " Y:" + pSceneTouchEvent.getY());
+			{								
 				mTouchDownPosition[0] = pSceneTouchEvent.getX();
 				mTouchDownPosition[1] = pSceneTouchEvent.getY();
 				int c = (int)pSceneTouchEvent.getX() / Card.CARD_WIDTH;
 				int l = (int)pSceneTouchEvent.getY() / Card.CARD_HEIGHT;
-				mDebugText[1].setText("C:" + c + " L:" + l);
+				strDebugLine = "X:" + pSceneTouchEvent.getX() + " Y:" + pSceneTouchEvent.getY() + " C:" + c + " L:" + l + " ";
 				if (((l*PokerSwap.GRID_COLS)+c>=0 ) && ((l*PokerSwap.GRID_COLS)+c)<mGrid.length)
 				{
 					mSelectedCard = mGrid[(l*PokerSwap.GRID_COLS)+c];
 					if (mSelectedCard != null)
 					{
-						mDebugText[3].setText(mSelectedCard.getCard().mValue + mSelectedCard.getCard().mColor.toString());		
+						strDebugLine += mSelectedCard.getCard().mValue + mSelectedCard.getCard().mColor.toString();
 						mSelectedCardOriginalPosition[0] = mSelectedCard.getX();
 						mSelectedCardOriginalPosition[1] = mSelectedCard.getY();
 					}
@@ -481,8 +494,9 @@ public class PokerSwap extends BaseGameActivity implements IOnSceneTouchListener
 					mSelectedCard = null;
 					mSelectedCardOriginalPosition[0] = -1;
 					mSelectedCardOriginalPosition[1] = -1;
-					mDebugText[2].setText("OutOfBound");
+					strDebugLine += "OutOfBound";
 				}
+				mDebugText[0].setText(strDebugLine);
 			}
 			else
 			{
